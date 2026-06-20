@@ -13,7 +13,7 @@ def generate_launch_description() -> LaunchDescription:
     stage_arg = DeclareLaunchArgument(
         'stage',
         default_value='beginner',
-        description='Task stage: beginner or advanced',
+        description='Task stage: entry, beginner, or advanced',
     )
     topic_name_arg = DeclareLaunchArgument(
         'topic_name',

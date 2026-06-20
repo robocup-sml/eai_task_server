@@ -7,13 +7,13 @@ from launch_ros.actions import Node
 def generate_launch_description() -> LaunchDescription:
     scenario_arg = DeclareLaunchArgument(
         'scenario',
-        default_value='production',
+        default_value='lifecycle',
         description='Task scenario: production, recycling, lifecycle',
     )
     stage_arg = DeclareLaunchArgument(
         'stage',
         default_value='beginner',
-        description='Task stage: beginner or advanced',
+        description='Task stage: entry, beginner, or advanced',
     )
     topic_name_arg = DeclareLaunchArgument(
         'topic_name',

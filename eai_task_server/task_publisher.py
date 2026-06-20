@@ -11,6 +11,40 @@ from sml_messages.msg import Order, Station, Task
 TaskBuilder = Callable[[], Task]
 
 
+def safe_material_ids(storage_materials: Dict[str, list[int]], key: str) -> list[int]:
+    value = storage_materials.get(key)
+    if not value:
+        return []
+    return value
+
+
+def build_mirrored_arena_layout(storage_materials: Dict[str, list[int]]) -> list[Station]:
+    return [
+        make_station(Station.ST_STORAGE, 'side_a_storage_1', 1, safe_material_ids(storage_materials, 'side_a_storage_1')),
+        make_station(Station.ST_STORAGE, 'side_a_storage_2', 2, safe_material_ids(storage_materials, 'side_a_storage_2')),
+        make_station(Station.ST_STORAGE, 'side_a_storage_3', 3, safe_material_ids(storage_materials, 'side_a_storage_3')),
+        make_station(Station.ST_WORKBENCH, 'side_a_workbench_1', 4, []),
+        make_station(Station.ST_WORKBENCH, 'side_a_workbench_2', 5, []),
+        make_station(Station.ST_HYBRID, 'side_a_hybrid_1', 6, safe_material_ids(storage_materials, 'side_a_hybrid_1')),
+        make_station(Station.ST_CUSTOMER, 'side_a_customer_1', 7, safe_material_ids(storage_materials, 'side_a_customer_1')),
+
+        make_station(Station.ST_STORAGE, 'side_b_storage_1', 8, safe_material_ids(storage_materials, 'side_b_storage_1')),
+        make_station(Station.ST_STORAGE, 'side_b_storage_2', 9, safe_material_ids(storage_materials, 'side_b_storage_2')),
+        make_station(Station.ST_STORAGE, 'side_b_storage_3', 10, safe_material_ids(storage_materials, 'side_b_storage_3')),
+        make_station(Station.ST_WORKBENCH, 'side_b_workbench_1', 11, []),
+        make_station(Station.ST_WORKBENCH, 'side_b_workbench_2', 12, []),
+        make_station(Station.ST_HYBRID, 'side_b_hybrid_1', 13, safe_material_ids(storage_materials, 'side_b_hybrid_1')),
+        make_station(Station.ST_CUSTOMER, 'side_b_customer_1', 14, safe_material_ids(storage_materials, 'side_b_customer_1')),
+    ]
+
+
+def fill_task(orders: list[Order], storage_materials: Dict[str, list[int]]) -> Task:
+    task = Task()
+    task.order_list = orders
+    task.arena_layout = build_mirrored_arena_layout(storage_materials)
+    return task
+
+
 def make_order(order_type: int, name: str, product_id: int) -> Order:
     order = Order()
     order.order_type = order_type
@@ -27,106 +61,178 @@ def make_station(station_type: int, name: str, station_id: int, material_ids: li
     station.material_ids = material_ids
     return station
 
+### ENTRY TIER
+
+def build_production_entry_task() -> Task:
+    orders = [
+        make_order(Order.OT_PRODUCE, 'produce_magnet', 13),
+    ]
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [1],
+            'side_a_storage_2': [3],
+            'side_b_storage_1': [1],
+            'side_b_storage_2': [3],
+        },
+    )
+
+def build_recycling_entry_task() -> Task:
+    orders = [
+        make_order(Order.OT_RECYCLE, 'recycle_battery', 34),
+    ]
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [4],
+            'side_a_storage_2': [3],
+            'side_b_storage_1': [4],
+            'side_b_storage_2': [3],
+            'side_a_customer_1': [34],
+            'side_b_customer_1': [34],
+        },
+    )
+
+def build_lifecycle_entry_task() -> Task:
+    orders = [
+        make_order(Order.OT_PRODUCE, 'produce_battery', 34),
+        make_order(Order.OT_PRODUCE, 'produce_estop', 81),
+        make_order(Order.OT_RECYCLE, 'recycle_magnet', 13),
+    ]
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [1, 8],
+            'side_a_storage_2': [3, 4],
+            'side_b_storage_1': [1, 8],
+            'side_b_storage_2': [3, 4],
+            'side_a_customer_1': [13],
+            'side_b_customer_1': [13],
+        },
+    )
+
+### BEGINNER TIER
 
 def build_production_beginner_task() -> Task:
-    task = Task()
-    task.order_list = [
-        make_order(Order.OT_PRODUCE, 'pb_order_1', 1),
-        make_order(Order.OT_PRODUCE, 'pb_order_2', 2),
+    orders = [
+        make_order(Order.OT_PRODUCE, 'produce_estop', 81),
+        make_order(Order.OT_PRODUCE, 'produce_carrot', 442),
     ]
-    task.arena_layout = [
-        make_station(Station.ST_STORAGE, 'storage_a', 1, [1, 2, 3]),
-        make_station(Station.ST_WORKBENCH, 'workbench_a', 2, []),
-        make_station(Station.ST_CUSTOMER, 'customer_a', 3, []),
-    ]
-    return task
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [2, 1],
+            'side_a_storage_2': [8],
+            'side_a_storage_3': [40],
+            'side_b_storage_1': [2, 1],
+            'side_b_storage_2': [8],
+            'side_b_storage_3': [40],
+        },
+    )
 
+def build_recycling_beginner_task() -> Task:
+    orders = [
+        make_order(Order.OT_RECYCLE, 'recycle_magnet', 13),
+        make_order(Order.OT_RECYCLE, 'recycle_traffic_light', 241),
+    ]
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [1, 3],
+            'side_a_storage_3': [4],
+            'side_a_hybrid_1': [2],
+            'side_b_storage_1': [1, 3],
+            'side_b_storage_3': [4],
+            'side_b_hybrid_1': [2],
+        },
+    )
+
+def build_lifecycle_beginner_task() -> Task:
+    orders = [
+        make_order(Order.OT_PRODUCE, 'produce_magnet', 13),
+        make_order(Order.OT_PRODUCE, 'produce_small_tree', 462),
+        make_order(Order.OT_PRODUCE, 'produce_hammer', 711),
+        make_order(Order.OT_RECYCLE, 'recycle_carrot', 442),
+        make_order(Order.OT_RECYCLE, 'recycle_battery', 34),
+    ]
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [10, 2],
+            'side_a_storage_2': [4, 30],
+            'side_a_storage_3': [6],
+            'side_a_hybrid_1': [7],
+            'side_a_customer_1': [34, 442],
+            
+            'side_b_storage_1': [10, 2],
+            'side_b_storage_2': [4, 30],
+            'side_b_storage_3': [6],
+            'side_b_hybrid_1': [7],
+            'side_b_customer_1': [34, 442],
+        },
+    )
+
+
+### ADVANCED TIER
 
 def build_production_advanced_task() -> Task:
-    task = Task()
-    task.order_list = [
+    orders = [
         make_order(Order.OT_PRODUCE, 'pa_order_1', 3),
         make_order(Order.OT_PRODUCE, 'pa_order_2', 4),
         make_order(Order.OT_PRODUCE, 'pa_order_3', 5),
     ]
-    task.arena_layout = [
-        make_station(Station.ST_STORAGE, 'storage_a', 1, [1, 2, 3, 4]),
-        make_station(Station.ST_STORAGE, 'storage_b', 2, [5, 6]),
-        make_station(Station.ST_WORKBENCH, 'workbench_a', 3, []),
-        make_station(Station.ST_HYBRID, 'hybrid_a', 4, []),
-        make_station(Station.ST_CUSTOMER, 'customer_a', 5, []),
-    ]
-    return task
-
-
-def build_recycling_beginner_task() -> Task:
-    task = Task()
-    task.order_list = [
-        make_order(Order.OT_RECYCLE, 'rb_order_1', 1),
-        make_order(Order.OT_RECYCLE, 'rb_order_2', 2),
-    ]
-    task.arena_layout = [
-        make_station(Station.ST_CUSTOMER, 'collection_a', 1, []),
-        make_station(Station.ST_WORKBENCH, 'sort_a', 2, []),
-        make_station(Station.ST_STORAGE, 'storage_a', 3, [1, 2, 3]),
-    ]
-    return task
-
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [1, 2, 3],
+            'side_a_storage_2': [4, 5],
+            'side_b_storage_1': [2, 3, 4],
+            'side_b_storage_2': [5, 6],
+        },
+    )
 
 def build_recycling_advanced_task() -> Task:
-    task = Task()
-    task.order_list = [
+    orders = [
         make_order(Order.OT_RECYCLE, 'ra_order_1', 3),
         make_order(Order.OT_RECYCLE, 'ra_order_2', 4),
         make_order(Order.OT_RECYCLE, 'ra_order_3', 5),
     ]
-    task.arena_layout = [
-        make_station(Station.ST_CUSTOMER, 'collection_a', 1, []),
-        make_station(Station.ST_CUSTOMER, 'collection_b', 2, []),
-        make_station(Station.ST_WORKBENCH, 'sort_a', 3, []),
-        make_station(Station.ST_HYBRID, 'hybrid_a', 4, []),
-        make_station(Station.ST_STORAGE, 'storage_a', 5, [1, 2, 3, 4, 5, 6]),
-    ]
-    return task
-
-
-def build_lifecycle_beginner_task() -> Task:
-    task = Task()
-    task.order_list = [
-        make_order(Order.OT_PRODUCE, 'lb_prod_1', 1),
-        make_order(Order.OT_RECYCLE, 'lb_recycle_1', 1),
-    ]
-    task.arena_layout = [
-        make_station(Station.ST_STORAGE, 'storage_a', 1, [1, 2]),
-        make_station(Station.ST_WORKBENCH, 'workbench_a', 2, []),
-        make_station(Station.ST_CUSTOMER, 'customer_a', 3, []),
-    ]
-    return task
-
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [2, 3, 4],
+            'side_a_storage_2': [5, 6],
+            'side_b_storage_1': [1, 3, 5],
+            'side_b_storage_2': [2, 4, 6],
+        },
+    )
 
 def build_lifecycle_advanced_task() -> Task:
-    task = Task()
-    task.order_list = [
+    orders = [
         make_order(Order.OT_PRODUCE, 'la_prod_1', 2),
         make_order(Order.OT_PRODUCE, 'la_prod_2', 3),
         make_order(Order.OT_RECYCLE, 'la_recycle_1', 2),
         make_order(Order.OT_RECYCLE, 'la_recycle_2', 4),
     ]
-    task.arena_layout = [
-        make_station(Station.ST_STORAGE, 'storage_a', 1, [1, 2, 3, 4]),
-        make_station(Station.ST_WORKBENCH, 'workbench_a', 2, []),
-        make_station(Station.ST_HYBRID, 'hybrid_a', 3, []),
-        make_station(Station.ST_CUSTOMER, 'customer_a', 4, []),
-        make_station(Station.ST_CUSTOMER, 'customer_b', 5, []),
-    ]
-    return task
+    return fill_task(
+        orders,
+        {
+            'side_a_storage_1': [1, 2, 3],
+            'side_a_storage_2': [4, 5],
+            'side_b_storage_1': [2, 3, 4],
+            'side_b_storage_2': [5, 6],
+        },
+    )
 
 
 TASK_BUILDERS: Dict[Tuple[str, str], TaskBuilder] = {
+    ('production', 'entry'): build_production_entry_task,
     ('production', 'beginner'): build_production_beginner_task,
     ('production', 'advanced'): build_production_advanced_task,
+    ('recycling', 'entry'): build_recycling_entry_task,
     ('recycling', 'beginner'): build_recycling_beginner_task,
     ('recycling', 'advanced'): build_recycling_advanced_task,
+    ('lifecycle', 'entry'): build_lifecycle_entry_task,
     ('lifecycle', 'beginner'): build_lifecycle_beginner_task,
     ('lifecycle', 'advanced'): build_lifecycle_advanced_task,
 }

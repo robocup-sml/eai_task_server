@@ -21,7 +21,7 @@ ros2 run eai_task_server task_listener
 ## Parameters
 
 - `scenario`: `production`, `recycling`, or `lifecycle`
-- `stage`: `beginner` or `advanced`
+- `stage`: `entry`, `beginner`, or `advanced`
 - `topic_name`: publish topic (default `/eai/task`)
 - `publish_period_sec`: publish period in seconds (default `1.0`)
 - `publish_once`: publish a single message and exit (default `false`)
