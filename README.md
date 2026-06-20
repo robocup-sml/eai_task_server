@@ -2,11 +2,13 @@
 
 ROS 2 Python package that publishes hardcoded EAI task messages.
 
+**Note:** Examples in this package are created for testing purposes. There is no guarantee for identical tasks during competitions.
+
 ## Run
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/marco/ros2_ws/install/setup.bash
+source ~/ros2_ws/install/setup.bash
 ros2 run eai_task_server task_publisher --ros-args -p scenario:=production -p stage:=beginner
 ```
 
@@ -14,7 +16,7 @@ In a second terminal, run:
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/marco/ros2_ws/install/setup.bash
+source ~/ros2_ws/install/setup.bash
 ros2 run eai_task_server task_listener
 ```
 
@@ -30,7 +32,7 @@ ros2 run eai_task_server task_listener
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/marco/ros2_ws/install/setup.bash
+source ~/ros2_ws/install/setup.bash
 ros2 launch eai_task_server task_server.launch.py scenario:=lifecycle stage:=advanced
 ```
 
@@ -44,7 +46,7 @@ ros2 launch eai_task_server task_server.launch.py scenario:=production stage:=be
 
 ```bash
 source /opt/ros/humble/setup.bash
-source /home/marco/ros2_ws/install/setup.bash
+source ~/ros2_ws/install/setup.bash
 ros2 launch eai_task_server task_server_with_listener.launch.py scenario:=recycling stage:=advanced
 ```
 
