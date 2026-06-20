@@ -45,6 +45,17 @@ def fill_task(orders: list[Order], storage_materials: Dict[str, list[int]]) -> T
     return task
 
 
+def build_side_only_task(task: Task, side: str) -> Task:
+    side_prefix = f'{side}_'
+
+    side_task = Task()
+    side_task.order_list = list(task.order_list)
+    side_task.arena_layout = [
+        station for station in task.arena_layout if station.name.startswith(side_prefix)
+    ]
+    return side_task
+
+
 def make_order(order_type: int, name: str, product_id: int) -> Order:
     order = Order()
     order.order_type = order_type
@@ -245,12 +256,16 @@ class TaskPublisherNode(Node):
         self.declare_parameter('scenario', 'production')
         self.declare_parameter('stage', 'beginner')
         self.declare_parameter('topic_name', '/eai/task')
+        self.declare_parameter('side_a_topic_name', '/eai/task/side_a')
+        self.declare_parameter('side_b_topic_name', '/eai/task/side_b')
         self.declare_parameter('publish_period_sec', 1.0)
         self.declare_parameter('publish_once', False)
 
         scenario = self.get_parameter('scenario').get_parameter_value().string_value.strip().lower()
         stage = self.get_parameter('stage').get_parameter_value().string_value.strip().lower()
         topic_name = self.get_parameter('topic_name').get_parameter_value().string_value
+        side_a_topic_name = self.get_parameter('side_a_topic_name').get_parameter_value().string_value
+        side_b_topic_name = self.get_parameter('side_b_topic_name').get_parameter_value().string_value
         period = self.get_parameter('publish_period_sec').get_parameter_value().double_value
         publish_once = self.get_parameter('publish_once').get_parameter_value().bool_value
 
@@ -262,18 +277,36 @@ class TaskPublisherNode(Node):
         self._build_task = TASK_BUILDERS[key]
         self._publish_once = publish_once
         self._publisher = self.create_publisher(Task, topic_name, 10)
+        self._side_a_publisher = self.create_publisher(Task, side_a_topic_name, 10)
+        self._side_b_publisher = self.create_publisher(Task, side_b_topic_name, 10)
         self._timer = self.create_timer(period, self._publish_task)
 
         self.get_logger().info(
             f'Publishing task on {topic_name} for scenario={scenario}, stage={stage} every {period:.2f}s '
             f'(publish_once={publish_once})'
         )
+        self.get_logger().info(f'Publishing side-specific task for side_a on {side_a_topic_name}')
+        self.get_logger().info(f'Publishing side-specific task for side_b on {side_b_topic_name}')
 
     def _publish_task(self) -> None:
         task = self._build_task()
+        side_a_task = build_side_only_task(task, 'side_a')
+        side_b_task = build_side_only_task(task, 'side_b')
+
         self._publisher.publish(task)
+        self._side_a_publisher.publish(side_a_task)
+        self._side_b_publisher.publish(side_b_task)
+
         self.get_logger().debug(
             f'Published task with {len(task.order_list)} orders and {len(task.arena_layout)} stations'
+        )
+        self.get_logger().debug(
+            f'Published side_a task with {len(side_a_task.order_list)} orders and '
+            f'{len(side_a_task.arena_layout)} stations'
+        )
+        self.get_logger().debug(
+            f'Published side_b task with {len(side_b_task.order_list)} orders and '
+            f'{len(side_b_task.arena_layout)} stations'
         )
 
         if self._publish_once:

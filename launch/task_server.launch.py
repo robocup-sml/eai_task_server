@@ -20,6 +20,16 @@ def generate_launch_description() -> LaunchDescription:
         default_value='/eai/task',
         description='Topic used by task publisher',
     )
+    side_a_topic_name_arg = DeclareLaunchArgument(
+        'side_a_topic_name',
+        default_value='/eai/task/side_a',
+        description='Topic used by side_a task publisher',
+    )
+    side_b_topic_name_arg = DeclareLaunchArgument(
+        'side_b_topic_name',
+        default_value='/eai/task/side_b',
+        description='Topic used by side_b task publisher',
+    )
     publish_period_sec_arg = DeclareLaunchArgument(
         'publish_period_sec',
         default_value='1.0',
@@ -41,6 +51,8 @@ def generate_launch_description() -> LaunchDescription:
                 'scenario': LaunchConfiguration('scenario'),
                 'stage': LaunchConfiguration('stage'),
                 'topic_name': LaunchConfiguration('topic_name'),
+                'side_a_topic_name': LaunchConfiguration('side_a_topic_name'),
+                'side_b_topic_name': LaunchConfiguration('side_b_topic_name'),
                 'publish_period_sec': LaunchConfiguration('publish_period_sec'),
                 'publish_once': LaunchConfiguration('publish_once'),
             }
@@ -52,6 +64,8 @@ def generate_launch_description() -> LaunchDescription:
             scenario_arg,
             stage_arg,
             topic_name_arg,
+            side_a_topic_name_arg,
+            side_b_topic_name_arg,
             publish_period_sec_arg,
             publish_once_arg,
             task_publisher_node,
