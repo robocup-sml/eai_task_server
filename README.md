@@ -48,13 +48,13 @@ ros2 run eai_task_server task_listener
 
 ## How to Adapt
 
-Teams can adjust task definitions for local testing by editing the task builders directly in [ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py](ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py#L77).
+Teams can adjust task definitions for local testing by editing the task builders directly in [./eai_task_server/task_publisher.py](./eai_task_server/task_publisher.py#L77).
 
 Useful places to modify:
 
-- Scenario/stage task contents (orders + required materials): [ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py](ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py#L77)
-- Arena layout station map (side A + side B station list): [ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py](ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py#L21)
-- Scenario/stage routing map (`scenario` + `stage` to builder function): [ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py](ros2_ws/src/robocup/eai_task_server/eai_task_server/task_publisher.py#L239)
+- Scenario/stage task contents (orders + required materials): [./eai_task_server/task_publisher.py](./eai_task_server/task_publisher.py#L77)
+- Arena layout station map (side A + side B station list): [./eai_task_server/task_publisher.py](./eai_task_server/task_publisher.py#L21)
+- Scenario/stage routing map (`scenario` + `stage` to builder function): [./eai_task_server/task_publisher.py](./eai_task_server/task_publisher.py#L239)
 
 After changes, rebuild and source again:
 
